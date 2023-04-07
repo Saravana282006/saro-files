@@ -1,30 +1,25 @@
-import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'dart:async';
-
+import 'package:http/http.dart' as http;
 import 'employees_list.dart';
 
-class FetchUser {
-  var data = [];
-  List<Employees> results = [];
-  String fetchurl = "https://jsonplaceholder.typicode.com/users";
-  
-  Future<List<Employees>> getEmployees({String? query}) async {
-    var url = Uri.parse(fetchurl);
-    var response = await http.get(url);
-    try {
-      if (response.statusCode == 200) {
-        data = json.decode(response.body);
-        results = data.map((e) => Employees.fromJson(e)).toList();
-        if (query !=null){
-          results = results.where((element) => element.name!.toLowerCase().contains(query.toLowerCase())).toList();
-        }
-      } else {
-        print('api error');
-      }
-    } on Exception catch (e) {
-      print('No results found');
+class BooksApi {
+  static Future<List<Book>> getBooks(String query) async {
+    final baseUrl = Uri.parse('https://jsonplaceholder.typicode.com/comments');
+    final response = await http.get(baseUrl);
+
+    if (response.statusCode == 200) {
+      final List books = json.decode(response.body);
+
+      return books.map((json) => Book.fromJson(json)).where((book) {
+        final titleLower = book.name?.toLowerCase();
+        final authorLower = book.email?.toLowerCase();
+        final searchLower = query.toLowerCase().trim();
+
+        return titleLower!.contains(searchLower) ||
+            authorLower!.contains(searchLower);
+      }).toList();
+    } else {
+      throw Exception();
     }
-    return results;
   }
 }
